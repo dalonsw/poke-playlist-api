@@ -6,6 +6,7 @@ const pokemonTeam = [];
 
 // Controlador para obter playlist baseada no Pokémon
 getPokemonPlaylist = async (req, res, next) => {
+  // Obtém a playlist baseada no Pokémon
   try {
     const { pokemon, playlist } = await buildPokemonPlaylist(req.params.identifier);
     res.json({ pokemon, playlist });
@@ -16,6 +17,7 @@ getPokemonPlaylist = async (req, res, next) => {
 
 // Controlador para obter playlist baseada no time de pokémons
 getTeamPlaylist = async (req, res, next) => {
+  // Obtém a playlist combinada do time de pokémons
   try {
     if (pokemonTeam.length === 0) {
       return res.status(400).json({ error: 'O time de pokémons está vazio.' });
@@ -23,6 +25,7 @@ getTeamPlaylist = async (req, res, next) => {
     const combinedPlaylist = [];
     const pokemonDetails = [];
 
+    // Para cada pokémon no time, obtém a playlist e adiciona à playlist combinada
     for (const member of pokemonTeam) {
       const { pokemon } = member;
       const { playlist } = await buildPokemonPlaylist(pokemon.id);
@@ -33,7 +36,7 @@ getTeamPlaylist = async (req, res, next) => {
       combinedPlaylist.push(...uniqueTracks.values());
       pokemonDetails.push(pokemon);
     }
-    // Shuffle
+    // Embaralha a playlist
     for (let i = combinedPlaylist.length - 1; i > 0; i--) {
       const j = Math.floor(Math.random() * (i + 1));
       [combinedPlaylist[i], combinedPlaylist[j]] = [combinedPlaylist[j], combinedPlaylist[i]];
@@ -50,50 +53,57 @@ timePokemonPlaylist = async (req, res, next) => {
   try {
     const { pokemon, playlist } = await buildPokemonPlaylist(req.body.identifier);
 
+    // Verifica se o time já está cheio
     if (pokemonTeam.length >= 6) {
       return res.status(400).json({ error: 'Time de pokémons já está cheio (máximo de 6).' });
     }
 
+    // Verifica se o Pokémon já está no time
     if (pokemonTeam.find(p => p.pokemon.id === pokemon.id)) {
       return res.status(400).json({ error: 'Pokémon já está no time.' });
     }
 
-    // salva o objeto completo { pokemon, playlist }
+    // Adiciona o Pokémon e sua playlist ao time
     pokemonTeam.push({
       pokemon,
       playlist
     });
 
+    // Retorna o time atualizado
     res.json({
       message: 'Pokémon adicionado ao time com sucesso.',
       team: pokemonTeam
     });
   } catch (error) {
-    next(error);
+    console.error(error);
   }
 };
 
 // Ver time
 viewPokemonTeam = (req, res, next) => {
+  // Retorna o time de pokémons
   res.json({ message: 'Time de Pokémon carregado com sucesso.', team: pokemonTeam });
 };
 
 // Atualizar Pokémon no time
 updatePokemonTeam = async (req, res, next) => {
+  // Obtém os identificadores do corpo da requisição
   const { identifier, newIdentifier } = req.body;
 
   try {
+    // Verifica se os identificadores são válidos
     if (!identifier || !newIdentifier) {
       return res.status(400).json({ error: "Identifiers inválidos." });
     }
 
-    // Agora o time guarda { pokemon, playlist }
+    // Encontra o índice do Pokémon a ser atualizado
     const index = pokemonTeam.findIndex(
       p =>
         p.pokemon.id === parseInt(identifier) ||
         p.pokemon.name.toLowerCase() === identifier.toLowerCase()
     );
 
+    // Verifica se o Pokémon foi encontrado no time
     if (index === -1) {
       return res.status(404).json({ error: 'Pokémon não encontrado no time.' });
     }
@@ -102,42 +112,49 @@ updatePokemonTeam = async (req, res, next) => {
     const { pokemon: newPokemon, playlist: newPlaylist } =
       await buildPokemonPlaylist(newIdentifier);
 
+    // Verifica se o novo Pokémon é válido
     if (!newPokemon || !newPokemon.id) {
       return res.status(404).json({ error: "Novo Pokémon inválido." });
     }
 
-    // Atualiza substituindo TUDO: Pokémon + Playlist
+    // Atualiza o Pokémon no time
     pokemonTeam[index] = {
       pokemon: newPokemon,
       playlist: newPlaylist
     };
 
+    // Retorna o time atualizado
     res.json({
       message: 'Pokémon atualizado com sucesso.',
       team: pokemonTeam
     });
 
   } catch (error) {
-    next(error);
+    console.error(error);
   }
 };
 
 // Deletar Pokémon
 deletePokemonFromTeam = (req, res, next) => {
+  // Obtém o identificador dos parâmetros da requisição
   const { identifier } = req.params;
 
+  // Encontra o índice do Pokémon a ser removido
   const index = pokemonTeam.findIndex(
     p =>
       p.pokemon.id === parseInt(identifier) ||
       p.pokemon.name.toLowerCase() === identifier.toLowerCase()
   );
 
+  // Verifica se o Pokémon foi encontrado no time
   if (index === -1) {
     return res.status(404).json({ error: 'Pokémon não encontrado no time.' });
   }
 
+  // Remove o Pokémon do time
   pokemonTeam.splice(index, 1);
 
+  // Retorna o time atualizado
   res.json({
     message: 'Pokémon removido do time com sucesso.',
     team: pokemonTeam

@@ -1,3 +1,4 @@
+// Módulos e dependências
 const express = require('express');
 const router = express.Router();
 const controller = require('../controllers/pokemonController');
@@ -8,7 +9,6 @@ router.get('/', (req, res) => {
   res.json({ message: 'Use /pokemon/:identifier para obter playlist baseada no tipo do Pokémon.' });
 });
 
-// Coloque as rotas /team antes da rota dinâmica /:identifier
 // Rota para adicionar pokémon no time (Max de 6 pokémons)
 // POST /pokemon/team
 router.post('/team', controller.timePokemonPlaylist);

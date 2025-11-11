@@ -1,13 +1,12 @@
-// CommonJS version: busca Pokémon na PokeAPI e retorna dados essenciais
-const fetchFn = (typeof fetch !== 'undefined') ? fetch : null;
-if (!fetchFn) {
-  // Assumimos Node >=18 com fetch global. Se não houver, lançamos um erro claro.
-  throw new Error('Global fetch não disponível. Use Node 18+ ou adicione um polyfill (ex: node-fetch).');
-}
-
+// Função para buscar dados do Pokémon
 async function getPokemon(identifier) {
+  // Query a ser feita na PokeAPI
   const url = `https://pokeapi.co/api/v2/pokemon/${identifier}`;
-  const response = await fetchFn(url);
+
+  // Requisição para buscar o Pokémon
+  const response = await fetch(url);
+
+  // Verifica se a requisição foi bem sucedida
   if (!response.ok) {
     const text = await response.text();
     const err = new Error(`Erro ao buscar Pokémon: HTTP ${response.status} - ${text}`);
@@ -15,8 +14,10 @@ async function getPokemon(identifier) {
     throw err;
   }
 
+  // Extrai os dados da resposta
   const data = await response.json();
 
+  // Retorna apenas as informações necessárias
   return {
     id: data.id,
     name: data.name,

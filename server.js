@@ -1,3 +1,4 @@
+// Módulos e dependências
 const express = require('express');
 const cors = require('cors');
 const bodyParser = require('body-parser');
@@ -13,26 +14,27 @@ app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, 'public')));
 
-// Rotas organizadas (REST)
+// Rotas da API
 const pokemonRouter = require('./routes/pokemon');
 app.use('/pokemon', pokemonRouter);
 
-// Rota raiz informativa
+// Rota para página inicial
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'public', 'index.html'));
 });
 
-// Health / info
+// Rota para página do time de pokémons
 app.get('/time', (req, res) => {
     res.sendFile(path.join(__dirname, 'public', 'time.html'));
 });
 
-// Error handling middleware
+// Middleware de tratamento de erros
 app.use((err, req, res, next) => {
   console.error(err);
   res.status(err.status || 500).json({ error: err.message || 'Internal Server Error' });
 });
 
+// Inicia o servidor
 const port = process.env.PORT || 3000;
 app.listen(port, () => {
   console.log(`Servidor rodando em http://localhost:${port}`);

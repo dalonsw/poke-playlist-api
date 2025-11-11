@@ -1,0 +1,280 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Time Pokémon — REST</title>
+
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <style>
+    .pokemon-card {
+      background: #ffffffee;
+      border-radius: 12px;
+      padding: 15px;
+      box-shadow: 0 4px 15px #0001;
+      display: flex;
+      align-items: center;
+      gap: 15px;
+      margin-bottom: 12px;
+    }
+    .sprite {
+      width: 72px;
+      height: 72px;
+      image-rendering: pixelated;
+    }
+  </style>
+</head>
+
+<body class="bg-light">
+
+  <div class="container py-4">
+    <h1 class="mb-4">📦 Time Pokémon — Cliente REST</h1>
+
+    <!-- Status -->
+    <div id="status" class="alert alert-info">Aguardando...</div>
+    <div class="card mb-4">
+      <!-- Ver time -->
+      <div class="card-body">
+        <h4 class="card-title">Ver Time (GET /team)</h4>
+        <button id="btnGet" class="btn btn-primary mt-2">Carregar Time</button>
+        <div id="teamList" class="mt-3"></div>
+      </div>
+      <!-- Ver playlist -->
+      <div class="card-body">
+        <h4 class="card-title">Ver Playlist do Time (GET /team/playlist)</h4>
+        <button id="btnGetPlaylist" class="btn btn-secondary mt-2">Carregar Playlist</button>
+        <div id="playlistResult" class="mt-3"></div>
+      </div>
+    </div>
+
+
+    <!-- Adicionar -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h4 class="card-title">Adicionar Pokémon (POST /team)</h4>
+        <input id="addIdentifier" class="form-control mb-2" placeholder="nome ou número">
+        <button id="btnAdd" class="btn btn-success">Adicionar</button>
+      </div>
+    </div>
+
+    <!-- Atualizar -->
+    <div class="card mb-4">
+      <div class="card-body">
+        <h4 class="card-title">Atualizar Pokémon (PUT /team)</h4>
+        <input id="updateIdentifier" class="form-control mb-2" placeholder="identifier atual (nome ou id)">
+        <input id="updateNewIdentifier" class="form-control mb-2" placeholder="novo identifier">
+        <button id="btnUpdate" class="btn btn-warning">Atualizar</button>
+      </div>
+    </div>
+
+    <!-- Deletar -->
+    <div class="card mb-5">
+      <div class="card-body">
+        <h4 class="card-title">Excluir Pokémon (DELETE /team/:identifier)</h4>
+        <input id="deleteIdentifier" class="form-control mb-2" placeholder="nome ou número">
+        <button id="btnDelete" class="btn btn-danger">Excluir</button>
+      </div>
+    </div>
+
+  </div>
+
+  <script>
+    const statusEl = document.getElementById("status");
+    const teamList = document.getElementById("teamList");
+
+    function setStatus(msg, type = "info") {
+      statusEl.className = `alert alert-${type}`;
+      statusEl.textContent = msg;
+    }
+
+    function renderTeam(team) {
+      teamList.innerHTML = "";
+      if (!team || team.length === 0) {
+        teamList.innerHTML = "<p class='text-muted'>Time vazio.</p>";
+        return;
+      }
+
+      team.forEach(p => {
+        const card = document.createElement("div");
+        card.className = "pokemon-card";
+
+        const img = document.createElement("img");
+        img.className = "sprite";
+        img.src = p.pokemon.sprite;
+        img.alt = p.pokemon.name;
+
+        const info = document.createElement("div");
+        info.innerHTML = `
+          <strong>${p.pokemon.name}</strong> (#${p.pokemon.id})<br>
+          Tipos: ${p.pokemon.types?.join(", ")}
+        `;
+
+        card.appendChild(img);
+        card.appendChild(info);
+        teamList.appendChild(card);
+      });
+    }
+
+    function renderPlaylist(team) {
+      const playlistResult = document.getElementById("playlistResult");
+      playlistResult.innerHTML = "";
+      if (!team || team.length === 0) {
+        playlistResult.innerHTML = "<p class='text-muted'>Nenhuma música na playlist.</p>";
+        return;
+      }
+
+      // Junta todas as músicas do time e remove duplicadas
+      const seen = new Set();
+      const combined = [];
+
+      team.forEach(p => {
+        const playlist = p.playlist || [];
+        playlist.forEach(track => {
+          if (!track) return;
+
+          const name = (track.name || "").toString().trim();
+          const url = (track.url || "").toString().trim();
+          let artists = "";
+          if (Array.isArray(track.artists)) artists = track.artists.join(", ");
+          else if (track.artists) artists = track.artists.toString();
+
+          // chave para deduplicação: preferir URL quando disponível, senão nome+artistas
+          const key = url ? `url:${url.toLowerCase()}` : `meta:${(name + "::" + artists).toLowerCase()}`;
+
+          if (!seen.has(key)) {
+            seen.add(key);
+            combined.push({ name, artists, url });
+          }
+        });
+      });
+
+      if (combined.length === 0) {
+        playlistResult.innerHTML = "<p class='text-muted'>Nenhuma música na playlist.</p>";
+        return;
+      }
+
+      const plDiv = document.createElement("div");
+      plDiv.className = "mb-4";
+
+      const title = document.createElement("h5");
+      title.textContent = `Playlist do time (${combined.length} ${combined.length === 1 ? "música" : "músicas"})`;
+      plDiv.appendChild(title);
+
+      const ul = document.createElement("ul");
+      ul.className = "list-group";
+
+      combined.forEach(track => {
+        const li = document.createElement("li");
+        li.className = "list-group-item";
+        const artistsText = track.artists ? ` - ${track.artists}` : "";
+        const href = track.url || "#";
+        li.innerHTML = `<a href="${href}" target="_blank" rel="noopener noreferrer">${track.name || "Untitled"}${artistsText}</a>`;
+        ul.appendChild(li);
+      });
+
+      plDiv.appendChild(ul);
+      playlistResult.appendChild(plDiv);
+    }
+
+    // Load Team Playlist
+    document.getElementById("btnGetPlaylist").onclick = async () => {
+      try {
+        setStatus("Carregando playlist do time...");
+        const res = await fetch("/pokemon/team");
+        const data = await res.json();
+        console.log(data.team);
+        renderPlaylist(data.team);
+        setStatus("Playlist carregada!", "success");
+      } catch {
+        setStatus("Erro ao carregar playlist.", "danger");
+      }
+    };
+
+    // GET /team
+    document.getElementById("btnGet").onclick = async () => {
+      try {
+        setStatus("Carregando time...");
+        const res = await fetch("/pokemon/team");
+        const data = await res.json();
+        renderTeam(data.team);
+        setStatus("Time carregado!", "success");
+      } catch {
+        setStatus("Erro ao carregar time.", "danger");
+      }
+    };
+
+    // POST /team
+    document.getElementById("btnAdd").onclick = async () => {
+      const identifier = document.getElementById("addIdentifier").value.trim();
+      if (!identifier) return setStatus("Informe um identifier!", "warning");
+
+      try {
+        setStatus("Adicionando...");
+        const res = await fetch("/pokemon/team", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          renderTeam(data.team);
+          setStatus("Pokémon adicionado!", "success");
+        } else {
+          setStatus(data.error, "danger");
+        }
+      } catch {
+        setStatus("Erro no POST.", "danger");
+      }
+    };
+
+    // PUT /team
+    document.getElementById("btnUpdate").onclick = async () => {
+      const identifier = document.getElementById("updateIdentifier").value.trim();
+      const newIdentifier = document.getElementById("updateNewIdentifier").value.trim();
+
+      if (!identifier || !newIdentifier)
+        return setStatus("Informe ambos identifiers!", "warning");
+
+      try {
+        setStatus("Atualizando...");
+        const res = await fetch("/pokemon/team", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ identifier, newIdentifier })
+        });
+        const data = await res.json();
+        if (res.ok) {
+          renderTeam(data.team);
+          setStatus("Pokémon atualizado!", "success");
+        } else {
+          setStatus(data.error, "danger");
+        }
+      } catch {
+        setStatus("Erro no PUT.", "danger");
+      }
+    };
+
+    // DELETE /team/:identifier
+    document.getElementById("btnDelete").onclick = async () => {
+      const identifier = document.getElementById("deleteIdentifier").value.trim();
+      if (!identifier) return setStatus("Informe um identifier!", "warning");
+
+      try {
+        setStatus("Deletando...");
+        const res = await fetch(`/pokemon/team/${identifier}`, { method: "DELETE" });
+        const data = await res.json();
+        if (res.ok) {
+          renderTeam(data.team);
+          setStatus("Pokémon removido!", "success");
+        } else {
+          setStatus(data.error, "danger");
+        }
+      } catch {
+        setStatus("Erro no DELETE.", "danger");
+      }
+    };
+  </script>
+
+</body>
+</html>

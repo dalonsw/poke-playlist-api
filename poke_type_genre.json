@@ -1,0 +1,22 @@
+{
+  "pokemon_type_music": {
+    "normal": "Indie Pop",
+    "fire": "Reggaeton",
+    "water": "Chillwave",
+    "grass": "Folk",
+    "electric": "Eletronica",
+    "ice": "Ambient",
+    "fighting": "Hip Hop",
+    "poison": "Industrial",
+    "ground": "Country",
+    "flying": "Drum and Bass",
+    "psychic": "Synthwave",
+    "bug": "Chiptune",
+    "ghost": "Dark Ambient",
+    "steel": "Metal",
+    "rock": "Hard Rock",
+    "dragon": "Epic Orchestral",
+    "fairy": "Dream Pop",
+    "dark": "Darkwave"
+  }
+}

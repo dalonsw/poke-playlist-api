@@ -1,44 +1,29 @@
-# API Demo - Aula
+Poke Playlist API
 
-Este repositório contém um exemplo simples em HTML (Bootstrap 5) para demonstrar chamadas a APIs usando `fetch` no navegador.
+Esta é uma API que gera playlists no Spotify baseadas nos tipos de Pokémon. Você pode obter uma playlist para um Pokémon específico ou para um time de até 6 Pokémon.
 
-Arquivos:
+## Endpoints
+- `GET /pokemon/:identifier`: Obtém uma playlist baseada no tipo do Pokémon identificado por nome ou ID.
+- `POST /pokemon/time`: Adiciona um Pokémon ao time (máximo de 6 Pokémon).
+- `GET /time`: Visualiza o time atual de Pokémon e a playlist correspondente.
+- `PUT /time`: Atualiza o time de Pokémon.
+- `DELETE /time/:identifier`: Remove um Pokémon do time pelo nome ou ID.
 
-- `api-demo.html` - Página HTML pronta para demonstração. Possui exemplos de GET, POST, PUT e DELETE usando `fetch` e exibe logs/respostas.
+## Configuração
+1. Clone o repositório.
+2. Instale as dependências com `npm install`.
+3. Crie um arquivo `.env` com suas credenciais do Spotify:
+4.   SPOTIFY_CLIENT_ID=seu_client_id
+5.   SPOTIFY_CLIENT_SECRET=seu_client_secret
+6.  Inicie o servidor com `node server.js`.
+7.  Acesse a API em `http://localhost:3000/pokemon`.
 
-Como usar:
+## Tecnologias Utilizadas
+- Node.js
+- Express
+- Spotify API
+- PokéAPI
 
-1. Abra `api-demo.html` diretamente no navegador (arquivo local). Observação: alguns navegadores bloqueiam CORS/`fetch` ao abrir arquivos locais; se encontrar problemas, execute um servidor estático.
-
-2. Para executar um servidor local simples (recomendado), use Python (se instalado):
-
-```powershell
-# No Windows PowerShell, execute na pasta do projeto
-cd "d:\Ramon\Unex\¬\Atividade de API\rest"
-# Python 3
-python -m http.server 8000
-# então abra http://localhost:8000/api-demo.html
-```
-
-3. Alternativas (Node.js):
-
-```powershell
-# instalar http-server globalmente (se necessário)
-npm install -g http-server
-http-server -p 8000
-# então abra http://localhost:8000/api-demo.html
-```
-
-Observações para aula:
-
-- O HTML usa `https://jsonplaceholder.typicode.com` por padrão — um serviço público para testes. Para usar sua API, altere as URLs nos campos do formulário.
-- Exemplos cobertos: GET (obter recurso), POST (criar), PUT (atualizar) e DELETE (remover).
-- O painel de logs mostra status HTTP e a resposta (formatada se for JSON).
-
-Sugestões de exercícios:
-
-1. Alterar a URL para um endpoint próprio e testar autenticação (adicionar cabeçalhos `Authorization`).
-2. Tratar erros detalhadamente (ex.: mostrar códigos de erro e mensagens amigáveis no UI).
-3. Salvar comandos recentes no localStorage para reaproveitamento.
-
-Licença: MIT
+## Autores
+- Daniel Alonso
+- João Gabriel

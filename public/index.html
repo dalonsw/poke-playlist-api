@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Poke Playlist</title>
+
+  <!-- Bootstrap -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+
+  <!-- Ícone opcional do Pokémon -->
+  <link rel="icon" type="image/png" href="https://raw.githubusercontent.com/PokeAPI/sprites/master/sprites/items/poke-ball.png">
+  
+  <style>
+    body {
+      background: linear-gradient(135deg, #d1e9ff, #ffffff 40%, #ffdee9);
+      min-height: 100vh;
+      padding-top: 40px;
+    }
+    .card-custom {
+      border-radius: 16px;
+      padding: 25px;
+      background: #ffffffdd;
+      box-shadow: 0 6px 20px #00000020;
+      backdrop-filter: blur(6px);
+    }
+    #status {
+      font-weight: 600;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="container">
+    <div class="card-custom mx-auto" style="max-width: 650px;">
+
+      <h1 class="text-center mb-3">🎧 Poke Playlist</h1>
+      <p class="text-center text-muted">Digite o nome ou número do Pokémon</p>
+      <a class="d-block text-center mb-3" href="/time">Criar uma playlist para o seu time</a>
+
+      <!-- Input -->
+      <div class="input-group mb-3">
+        <input id="identifier" class="form-control" placeholder="ex: pikachu ou 25">
+        <button id="btn" class="btn btn-primary">Buscar</button>
+      </div>
+
+      <!-- Status -->
+      <div id="status" class="text-center mb-3"></div>
+
+      <!-- Resultados -->
+      <div id="result">
+        <section id="pokemon" class="mb-4"></section>
+        <section id="playlist"></section>
+      </div>
+    </div>
+  </div>
+
+  <!-- Bootstrap JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+
+  <script>
+    const btn = document.getElementById('btn');
+    const input = document.getElementById('identifier');
+    const status = document.getElementById('status');
+    const pokemonEl = document.getElementById('pokemon');
+    const playlistEl = document.getElementById('playlist');
+
+    function showStatus(text, isError = false){
+      status.textContent = text;
+      status.className = isError ? "text-danger" : "text-success";
+    }
+
+    function render(data){
+      pokemonEl.innerHTML = '';
+      playlistEl.innerHTML = '';
+
+      const p = data.pokemon;
+
+      const h = document.createElement('h2');
+      h.textContent = `${p.name.charAt(0).toUpperCase() + p.name.slice(1)} (#${p.id})`;
+      h.className = "fw-bold text-center";
+      pokemonEl.appendChild(h);
+
+      const types = document.createElement('p');
+      types.className = "text-center text-muted";
+      types.textContent = 'Tipos: ' + (p.types.join(', '));
+      pokemonEl.appendChild(types);
+
+      const plHeader = document.createElement('h3');
+      plHeader.textContent = 'Playlist';
+      plHeader.className = "mt-4 mb-3";
+      playlistEl.appendChild(plHeader);
+
+      const ul = document.createElement('ul');
+      ul.className = "list-group";
+
+      if (!data.playlist || data.playlist.length === 0){
+        const li = document.createElement('li');
+        li.className = "list-group-item";
+        li.textContent = 'Nenhuma música encontrada.';
+        ul.appendChild(li);
+      } else {
+        data.playlist.forEach(item => {
+          const li = document.createElement('li');
+          li.className = "list-group-item";
+
+          const a = document.createElement('a');
+          a.href = item.url;
+          a.target = '_blank';
+          a.rel = 'noopener noreferrer';
+          a.textContent = `${item.name} — ${item.artist} (${item.album})`;
+
+          li.appendChild(a);
+          ul.appendChild(li);
+        });
+      }
+      playlistEl.appendChild(ul);
+    }
+
+    async function fetchPokemon(identifier){
+      showStatus('Carregando...');
+      pokemonEl.innerHTML = '';
+      playlistEl.innerHTML = '';
+
+      try {
+        const res = await fetch(`/pokemon/${encodeURIComponent(identifier)}`);
+        if (!res.ok){
+          const txt = await res.text();
+          throw new Error(`Erro ${res.status}: ${txt}`);
+        }
+        const data = await res.json();
+        showStatus('Pronto');
+        render(data);
+      } catch (err){
+        showStatus(err.message, true);
+      }
+    }
+
+    btn.addEventListener('click', () => {
+      const id = input.value.trim();
+      if (!id) { showStatus('Informe um nome ou número.', true); return; }
+      fetchPokemon(id);
+    });
+
+    input.addEventListener('keydown', (e) => {
+      if (e.key === 'Enter') btn.click();
+    });
+  </script>
+
+</body>
+</html>

@@ -27,6 +27,36 @@
     #status {
       font-weight: 600;
     }
+    img {
+      width: 150px;
+    }
+    .badge {
+      font-size: 0.9em;
+      text-transform: capitalize;
+    }
+    #pokemon {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+    .type-normal { background-color: #A8A77A !important; color: #000; }
+    .type-fire { background-color: #EE8130 !important; color: #fff; }
+    .type-water { background-color: #6390F0 !important; color: #fff; }
+    .type-electric { background-color: #F7D02C !important; color: #000; }
+    .type-grass { background-color: #7AC74C !important; color: #000; }
+    .type-ice { background-color: #96D9D6 !important; color: #000; }
+    .type-fighting { background-color: #C22E28 !important; color: #fff; }
+    .type-poison { background-color: #A33EA1 !important; color: #fff; }
+    .type-ground { background-color: #E2BF65 !important; color: #000; }
+    .type-flying { background-color: #A98FF3 !important; color: #000; }
+    .type-psychic { background-color: #F95587 !important; color: #fff; }
+    .type-bug { background-color: #A6B91A !important; color: #000; }
+    .type-rock { background-color: #B6A136 !important; color: #000; }
+    .type-ghost { background-color: #735797 !important; color: #fff; }
+    .type-dragon { background-color: #6F35FC !important; color: #fff; }
+    .type-dark { background-color: #705746 !important; color: #fff; }
+    .type-steel { background-color: #B7B7CE !important; color: #000; }
+    .type-fairy { background-color: #D685AD !important; color: #000; }
   </style>
 </head>
 <body>
@@ -40,7 +70,7 @@
 
       <!-- Input -->
       <div class="input-group mb-3">
-        <input id="identifier" class="form-control" placeholder="ex: pikachu ou 25">
+        <input id="identifier" class="form-control" placeholder="Ex.: Pikachu ou 25">
         <button id="btn" class="btn btn-primary">Buscar</button>
       </div>
 
@@ -71,20 +101,35 @@
     }
 
     function render(data){
+      const nome = data.pokemon.name.charAt(0).toUpperCase() + data.pokemon.name.slice(1);
+      const tipos = data.pokemon.types
+      document.title = `${nome} — Poke Playlist`;
       pokemonEl.innerHTML = '';
       playlistEl.innerHTML = '';
 
       const p = data.pokemon;
+
+      const img = document.createElement('img');
+      img.src = p.sprite;
+      img.alt = p.name;
+      img.className = "d-block mx-auto mb-3";
+      pokemonEl.appendChild(img);
 
       const h = document.createElement('h2');
       h.textContent = `${p.name.charAt(0).toUpperCase() + p.name.slice(1)} (#${p.id})`;
       h.className = "fw-bold text-center";
       pokemonEl.appendChild(h);
 
-      const types = document.createElement('p');
-      types.className = "text-center text-muted";
-      types.textContent = 'Tipos: ' + (p.types.join(', '));
-      pokemonEl.appendChild(types);
+      const typesContainer = document.createElement('div');
+      
+      tipos.forEach(type => {
+        const span = document.createElement('span');
+        span.className = "badge bg-secondary me-1 " + `type-${type}`;
+        span.textContent = type;
+        typesContainer.appendChild(span);
+      });
+
+      pokemonEl.appendChild(typesContainer);
 
       const plHeader = document.createElement('h3');
       plHeader.textContent = 'Playlist';

@@ -62,7 +62,7 @@ timePokemonPlaylist = async (req, res, next) => {
     if (pokemonTeam.find(p => p.pokemon.id === pokemon.id)) {
       return res.status(400).json({ error: 'Pokémon já está no time.' });
     }
-
+    
     // Adiciona o Pokémon e sua playlist ao time
     pokemonTeam.push({
       pokemon,
@@ -76,6 +76,10 @@ timePokemonPlaylist = async (req, res, next) => {
     });
   } catch (error) {
     console.error(error);
+    if (error.message.includes('Identifier inválido')) {
+      return res.status(400).json({ error: 'Identifier inválido.' });
+    }
+    next(error);
   }
 };
 

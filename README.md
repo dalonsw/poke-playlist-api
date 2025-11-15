@@ -15,8 +15,8 @@ Você pode obter uma playlist para um Pokémon específico ou para um time de at
 1. Clone o repositório.
 2. Instale as dependências com `npm install`.
 3. Crie um arquivo `.env` com suas credenciais do Spotify:
-4.   SPOTIFY_CLIENT_ID=seu_client_id
-5.   SPOTIFY_CLIENT_SECRET=seu_client_secret
+    SPOTIFY_CLIENT_ID=seu_client_id
+    SPOTIFY_CLIENT_SECRET=seu_client_secret
 6.  Inicie o servidor com `node server.js`.
 7.  Acesse a API em `http://localhost:3000/pokemon`.
 

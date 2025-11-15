@@ -8,10 +8,17 @@ const dotenv = require('dotenv');
 // Carrega variáveis de ambiente (se existir .env)
 dotenv.config();
 
+// Middleware para log de requisições
+const requestLogger = (req, res, next) => {
+  console.log(`${new Date().toISOString()} - ${req.method} ${req.originalUrl}`);
+  next();
+}
+
 // Configurações da API Express
 const app = express();
 app.use(cors());
 app.use(bodyParser.json());
+app.use(requestLogger);
 app.use(express.static(path.join(__dirname, 'public')));
 
 // Rotas da API
